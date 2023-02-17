@@ -115,6 +115,10 @@ private:
   std::string                 m_frame_id_;
   bool						  m_use_enu_;
 
+  bool              t_use_2d_;
+  bool              t_manual_datum_;
+  std::vector<double> t_datum_vals_;
+
   bool						  m_odom_enable_;
   bool						  m_odom_publish_tf_;
   std::string                 m_odom_frame_id_;
@@ -512,6 +516,10 @@ public:
    * \param[in] ref_node_handle   ROS nodeHandle.
    */
   void loadFromRosNodeHandle(const rclcpp::Node& ref_node_handle);
+  bool getUse2D(void) const;
+  bool getUseManualDatum(void) const;
+  const std::vector<double> &getDatum(void) const;
+
 };
 }
 

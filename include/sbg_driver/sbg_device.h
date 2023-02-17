@@ -45,6 +45,7 @@ private:
 
   uint32_t                m_rate_frequency_;
 
+  rclcpp::Publisher<geographic_msgs::msg::GeoPose, std::allocator<void>>::SharedPtr datum_pub_;
   bool                    m_mag_calibration_ongoing_;
   bool                    m_mag_calibration_done_;
   SbgEComMagCalibResults  m_magCalibResults;
@@ -80,7 +81,8 @@ private:
    * Load the parameters.
    */
   void loadParameters(void);
-
+  void handle_service(  sbg_driver::srv::SetDatum::Request::SharedPtr request,
+  sbg_driver::srv::SetDatum::Response::SharedPtr);
   /*!
    * Create the connection to the SBG device.
    * 
@@ -107,7 +109,7 @@ private:
    * Initialize the publishers according to the configuration.
    */
   void initPublishers(void);
-
+  void initServices(void);
   /*!
    * Configure the connected SBG device.
    * This function will configure the device if the config file allows it.

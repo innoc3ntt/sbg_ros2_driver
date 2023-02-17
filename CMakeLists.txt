@@ -14,6 +14,7 @@ find_package(tf2_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(Boost REQUIRED)
+find_package(geographic_msgs REQUIRED)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -31,6 +32,7 @@ set (USED_LIBRARIES
   tf2_ros
   tf2_msgs
   tf2_geometry_msgs
+  geographic_msgs
 )
 
 set (msg_files
@@ -66,10 +68,12 @@ set (msg_files
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files}
+  "srv/SetDatum.srv"
   DEPENDENCIES
     std_msgs
     geometry_msgs
     builtin_interfaces
+    geographic_msgs
 )
 
 ament_export_dependencies(rosidl_default_runtime)

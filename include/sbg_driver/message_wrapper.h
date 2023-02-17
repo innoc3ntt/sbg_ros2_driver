@@ -56,6 +56,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <nav_msgs/msg/odometry.hpp>
+#include <geographic_msgs/msg/geo_pose.hpp>
 
 // SbgRos message headers
 #include "sbg_driver/msg/sbg_status.hpp"
@@ -76,6 +77,7 @@
 #include "sbg_driver/msg/sbg_imu_short.hpp"
 #include "sbg_driver/msg/sbg_air_data.hpp"
 
+#include "sbg_driver/srv/set_datum.hpp"
 namespace sbg
 {
 typedef struct _UTM0
@@ -98,24 +100,27 @@ private:
   std::string                         m_frame_id_;
   bool                                m_use_enu_;
   TimeReference                       m_time_reference_;
-  UTM0					              m_utm0_;
+  UTM0					                      m_utm0_;
 
   bool                                m_odom_enable_;
   bool                                m_odom_publish_tf_;
   std::string                         m_odom_frame_id_;
   std::string                         m_odom_base_frame_id_;
   std::string                         m_odom_init_frame_id_;
+    
+  bool                                t_use_2d_;
+  bool                                t_manual_datum_;
+  std::vector<double>                 t_datum_vals_;
 
   //---------------------------------------------------------------------//
   //- Internal methods                                                  -//
   //---------------------------------------------------------------------//
-
   /*!
-   * Wrap an angle to 2 PI.
-   *
-   * \param[in] angle_rad			Angle in rad.
-   * \return						Wrapped angle.
-   */
+  * Wrap an angle to 2 PI.
+  *
+  * \param[in] angle_rad			Angle in rad.
+  * \return						Wrapped angle.
+  */
   float wrapAngle2Pi(float angle_rad) const;
 
   /*!
@@ -298,14 +303,7 @@ private:
    */
    char UTMLetterDesignator(double Lat);
 
-   /*!
-   * Set UTM initial position.
-   *
-   * \param[in] Lat                     Latitude, in degrees.
-   * \param[in] Long                    Longitude, in degrees.
-   * \param[in] altitude                Altitude, in meters.
-   */
-   void initUTM(double Lat, double Long, double altitude);
+
 
    /*!
    * Convert latitude and longitude to a position relative to UTM initial position.
@@ -319,7 +317,14 @@ private:
    void LLtoUTM(double Lat, double Long, int zoneNumber, double &UTMNorthing, double &UTMEasting) const;
 
 public:
-
+   /*!
+   * Set UTM initial position.
+   *
+   * \param[in] Lat                     Latitude, in degrees.
+   * \param[in] Long                    Longitude, in degrees.
+   * \param[in] altitude                Altitude, in meters.
+   */
+   void initUTM(double Lat, double Long, double altitude);
   //---------------------------------------------------------------------//
   //- Transform broadcasters                                            -//
   //---------------------------------------------------------------------//
@@ -395,6 +400,9 @@ public:
    * \param[in] ref_frame_id     Odometry init frame ID.
    */
   void setOdomInitFrameId(const std::string &ref_frame_id);
+
+  void setDatum(const std::vector<double> datum);
+  void setUseManualDatum(bool manual_datum);
 
   //---------------------------------------------------------------------//
   //- Operations                                                        -//
@@ -545,6 +553,10 @@ public:
    */
   const sensor_msgs::msg::Imu createRosImuMessage(const sbg_driver::msg::SbgImuData& ref_sbg_imu_msg, const sbg_driver::msg::SbgEkfQuat& ref_sbg_quat_msg) const;
 
+const sensor_msgs::msg::Imu createRosImuMessage(
+  const sbg_driver::msg::SbgImuData & ref_sbg_imu_msg,
+  const sbg_driver::msg::SbgEkfEuler & ref_sbg_euler_msg) const;
+
   /*!
    * Create a ROS standard odometry message from SBG messages.
    *
@@ -644,7 +656,10 @@ public:
    * \return                        ROS standard fluid pressure message.
    */
   const sensor_msgs::msg::FluidPressure createRosFluidPressureMessage(const sbg_driver::msg::SbgAirData& ref_sbg_air_msg) const; 
+  
+  bool getUse2D(void) const;
 };
+
 }
 
 #endif // SBG_ROS_MESSAGE_WRAPPER_H

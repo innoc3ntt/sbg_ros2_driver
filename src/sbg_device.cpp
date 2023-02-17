@@ -15,6 +15,9 @@
 // SbgECom headers
 #include <version/sbgVersion.h>
 
+#include <geographic_msgs/msg/geo_pose.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 using namespace std;
 using sbg::SbgDevice;
 
@@ -125,6 +128,10 @@ void SbgDevice::loadParameters(void)
   rclcpp::NodeOptions node_opt;
   node_opt.automatically_declare_parameters_from_overrides(true);
   rclcpp::Node n_private("npv", "", node_opt);
+
+
+
+
   m_config_store_.loadFromRosNodeHandle(n_private);
 }
 
@@ -168,6 +175,29 @@ void SbgDevice::connect(void)
   readDeviceInfo();
 }
 
+void SbgDevice::handle_service(
+  sbg_driver::srv::SetDatum::Request::SharedPtr request,
+  sbg_driver::srv::SetDatum::Response::SharedPtr)
+{
+  double latitude = request->geo_pose.position.latitude;
+  double longitude = request->geo_pose.position.longitude;
+  double altitude =  request->geo_pose.position.altitude;
+
+  m_message_publisher_.updateDatum(latitude, longitude, altitude);
+  RCLCPP_INFO(m_ref_node_.get_logger(),"Datum (latitude, longitude, altitude) is (%0.2f, %0.2f, %0.2f)",
+    latitude, longitude, altitude); 
+
+  geographic_msgs::msg::GeoPose new_datum;
+  
+  new_datum.position.latitude   = std::move(latitude);
+  new_datum.position.longitude  = std::move(longitude);
+  new_datum.position.altitude   = std::move(altitude);
+
+  new_datum.orientation = tf2::toMsg(tf2::Quaternion::getIdentity());
+
+  datum_pub_ -> publish(new_datum);
+}
+
 void SbgDevice::readDeviceInfo(void)
 {
   SbgEComDeviceInfo device_info;
@@ -203,9 +233,19 @@ std::string SbgDevice::getVersionAsString(uint32 sbg_version_enc) const
 void SbgDevice::initPublishers(void)
 {
   m_message_publisher_.initPublishers(m_ref_node_, m_config_store_);
+  
 
   m_rate_frequency_ = m_config_store_.getReadingRateFrequency();
 }
+
+void SbgDevice::initServices(void){
+  m_ref_node_.create_service<sbg_driver::srv::SetDatum>(
+    "sbg_datum", std::bind(&SbgDevice::handle_service, this, std::placeholders::_1,std::placeholders::_2));
+
+  datum_pub_ = m_ref_node_.create_publisher<geographic_msgs::msg::GeoPose>(
+    "/sbg_datum_update", rclcpp::QoS(10));
+}
+
 
 void SbgDevice::configure(void)
 {
@@ -468,6 +508,7 @@ void SbgDevice::initDeviceForReceivingData(void)
 {
   SbgErrorCode error_code;
   initPublishers();
+  initServices();
   configure();
 
   error_code = sbgEComSetReceiveLogCallback(&m_com_handle_, onLogReceivedCallback, this);

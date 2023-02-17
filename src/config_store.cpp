@@ -35,6 +35,14 @@ void ConfigStore::loadOdomParameters(const rclcpp::Node& ref_node_handle)
   ref_node_handle.get_parameter_or<std::string>("odometry.odomFrameId", m_odom_frame_id_      , "odom");
   ref_node_handle.get_parameter_or<std::string>("odometry.baseFrameId", m_odom_base_frame_id_ , "base_link");
   ref_node_handle.get_parameter_or<std::string>("odometry.initFrameId", m_odom_init_frame_id_ , "map");
+  
+  ref_node_handle.get_parameter_or<bool>        ("odometry.use2D", t_use_2d_ , true);
+  ref_node_handle.get_parameter_or<bool>        ("odometry.waitForDatum", t_manual_datum_ , false);
+  
+  if (t_manual_datum_){
+    ref_node_handle.get_parameter_or<std::vector<double>> ("odometry.datum", t_datum_vals_ , {-31.9802, 115.8187, 5.0});
+  }
+  
 }
 
 void ConfigStore::loadCommunicationParameters(const rclcpp::Node& ref_node_handle)
@@ -368,6 +376,23 @@ const std::string &ConfigStore::getOdomBaseFrameId(void) const
 const std::string &ConfigStore::getOdomInitFrameId(void) const
 {
   return m_odom_init_frame_id_;
+}
+
+// added functions
+
+bool ConfigStore::getUse2D(void) const
+{
+  return t_use_2d_;
+}
+
+bool ConfigStore::getUseManualDatum(void) const
+{
+  return t_manual_datum_;
+}
+
+const std::vector<double> &ConfigStore::getDatum(void) const
+{
+  return t_datum_vals_;
 }
 
 //---------------------------------------------------------------------//
