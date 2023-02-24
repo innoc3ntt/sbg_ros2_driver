@@ -16,7 +16,7 @@
 #include <version/sbgVersion.h>
 
 #include <geographic_msgs/msg/geo_pose.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 using namespace std;
 using sbg::SbgDevice;

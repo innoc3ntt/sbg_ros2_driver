@@ -6,7 +6,7 @@
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
 
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 // Project headers
 #include <sbg_vector3.h>
 
@@ -605,7 +605,8 @@ void MessageWrapper::setUseManualDatum(bool manual_datum)
   t_manual_datum_ = manual_datum;
 }
 
-void MessageWrapper::setDatum(const std::vector<double> datum){
+void MessageWrapper::setDatum(const std::vector<double> datum)
+{
   t_datum_vals_ = datum;
 }
 
@@ -1198,7 +1199,7 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(
 
 const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(
   const sbg_driver::msg::SbgImuData & ref_sbg_imu_msg,
-  const sbg_driver::msg::SbgEkfNav & ref_ekf_nav_msg, 
+  const sbg_driver::msg::SbgEkfNav & ref_ekf_nav_msg,
   const tf2::Quaternion & ref_orientation,
   const sbg_driver::msg::SbgEkfEuler & ref_ekf_euler_msg)
 {
@@ -1214,8 +1215,8 @@ const nav_msgs::msg::Odometry MessageWrapper::createRosOdoMessage(
 
   // Convert latitude and longitude to UTM coordinates.
   if (m_utm0_.zone == 0) {
-    if (t_manual_datum_){
-      initUTM(t_datum_vals_[0],t_datum_vals_[1],t_datum_vals_[2]);
+    if (t_manual_datum_) {
+      initUTM(t_datum_vals_[0], t_datum_vals_[1], t_datum_vals_[2]);
     } else {
       initUTM(ref_ekf_nav_msg.latitude, ref_ekf_nav_msg.longitude, ref_ekf_nav_msg.altitude);
     }
